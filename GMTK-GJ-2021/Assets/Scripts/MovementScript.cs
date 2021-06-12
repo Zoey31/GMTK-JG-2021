@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,38 +7,51 @@ public class MovementScript : MonoBehaviour
 {
     [SerializeField] GameObject playerGO;
     [SerializeField] float moveSpeedScaler = 100f;
+    [SerializeField] float rotateSpeedScaler = 10f;
+    [SerializeField] ParticleSystem dustParticles;
     Animator playerAnimator;
 
-    // Start is called before the first frame update
     void Start()
     {
         playerAnimator = playerGO.GetComponentInChildren<Animator>();
     }
 
-    // Update is called once per frame
     void Update()
     {
-        Move();
+        var movementVector = Move();
+        Rotate(movementVector);
+        Animate(movementVector);
     }
 
-    // This method should be refactored, that makes more sense ^^
-    private void Move()
+    private void Animate(Vector3 targetVector)
     {
-        var deltaX = Input.GetAxis("Horizontal") * Time.deltaTime * moveSpeedScaler;
-        var deltaY = Input.GetAxis("Vertical") * Time.deltaTime * moveSpeedScaler;
-        Debug.Log("DeltaX: " + deltaX);
-        Debug.Log("DeltaY: " + deltaY);
-
-        //var newXPos = Mathf.Clamp(transform.position.x + deltaX, xMin, xMax);
-        //var newYPos = Mathf.Clamp(transform.position.y + deltaY, yMin, yMax);
-        var movementVector = new Vector3(deltaX, 0, deltaY);
-        transform.position += movementVector;
-
-        if (deltaX + deltaY > 0)
+        if (targetVector.magnitude > 0)
         {
-            playerAnimator.SetFloat("move_speed", deltaX + deltaY);
+            playerAnimator.SetFloat("move_speed", targetVector.magnitude);
+            var meshTranform = GetComponentInChildren<Transform>();
+            Instantiate(
+                dustParticles,
+                meshTranform.position,
+                Quaternion.Euler(transform.position.x, 180 - transform.position.y, transform.position.z)
+                );
         }
-        
-        //transform.Translate(moveVertical * Time.deltaTime * moveSpeedScaler * Vector3.forward);
+    }
+
+    private Vector3 Move()
+    {
+        var targetVector = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+
+        var speed = moveSpeedScaler * Time.deltaTime;
+        var targetPosition = transform.position + targetVector * speed;
+        transform.position = targetPosition;
+
+        return targetVector;
+    }
+
+    private void Rotate(Vector3 movementVector)
+    {
+        if (movementVector.magnitude == 0) { return; }
+        var rotation = Quaternion.LookRotation(movementVector);
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, rotation, rotateSpeedScaler);
     }
 }
