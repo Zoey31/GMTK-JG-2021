@@ -5,11 +5,8 @@ using UnityEngine;
 public class MovementScript : MonoBehaviour
 {
     [SerializeField] GameObject playerGO;
-    [SerializeField] float moveSpeedScaler = 10f;
+    [SerializeField] float moveSpeedScaler = 100f;
     Animator playerAnimator;
-
-    float moveHorizontal = 0;
-    float moveVertical = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -26,14 +23,21 @@ public class MovementScript : MonoBehaviour
     // This method should be refactored, that makes more sense ^^
     private void Move()
     {
-        moveHorizontal = Input.GetAxis("Horizontal");
-        moveVertical = Input.GetAxis("Vertical");
+        var deltaX = Input.GetAxis("Horizontal") * Time.deltaTime * moveSpeedScaler;
+        var deltaY = Input.GetAxis("Vertical") * Time.deltaTime * moveSpeedScaler;
+        Debug.Log("DeltaX: " + deltaX);
+        Debug.Log("DeltaY: " + deltaY);
 
-        if (moveHorizontal + moveVertical > 0)
+        //var newXPos = Mathf.Clamp(transform.position.x + deltaX, xMin, xMax);
+        //var newYPos = Mathf.Clamp(transform.position.y + deltaY, yMin, yMax);
+        var movementVector = new Vector3(deltaX, 0, deltaY);
+        transform.position += movementVector;
+
+        if (deltaX + deltaY > 0)
         {
-            playerAnimator.SetFloat("move_speed", moveHorizontal + moveVertical);
+            playerAnimator.SetFloat("move_speed", deltaX + deltaY);
         }
         
-        transform.Translate(moveVertical * Time.deltaTime * moveSpeedScaler * Vector3.forward);
+        //transform.Translate(moveVertical * Time.deltaTime * moveSpeedScaler * Vector3.forward);
     }
 }
