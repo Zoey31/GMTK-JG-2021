@@ -18,13 +18,15 @@ public class GoalBehaviour : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.name == "Player")
+        Debug.Log("Colisioned :D with" + collision.gameObject.name);
+        if (collision.gameObject.tag == "Player")
         {
+            Debug.Log("Should Start New Lvl");
             sceneLoader.loadNextScene();
         }
     }

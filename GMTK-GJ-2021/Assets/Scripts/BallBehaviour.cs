@@ -18,7 +18,7 @@ public class BallBehaviour : ProtectedSettings
     public bool isInPlayerRange = false;
     Animator ballanimator;
     bool isAnimationPlaying = false;
-    float jumpHight = 2.0f;
+    [SerializeField] float jumpHight = 2.0f;
 
     private void Awake()
     {
@@ -27,6 +27,7 @@ public class BallBehaviour : ProtectedSettings
 
     void Start()
     {
+        player = GameObject.FindGameObjectWithTag("Player");
         ring = GetChildWithName(this.gameObject, "Joinable_Highlight");
         hideRing();
     }
@@ -34,17 +35,23 @@ public class BallBehaviour : ProtectedSettings
     // Update is called once per frame
     void Update()
     {
-        float distanceToPlayer = Vector3.Distance(player.transform.position, transform.position);
-
-        isInPlayerRange = distanceToPlayer < activationDistance;
-
-        if (isInPlayerRange && !isPossessed)
+        if (player != null)
         {
-            displayRing();
-        }
-        else
+            float distanceToPlayer = Vector3.Distance(player.transform.position, transform.position);
+
+            isInPlayerRange = distanceToPlayer < activationDistance;
+
+            if (isInPlayerRange && !isPossessed)
+            {
+                displayRing();
+            }
+            else
+            {
+                hideRing();
+            }
+        } else
         {
-            hideRing();
+            player = GameObject.FindGameObjectWithTag("Player");
         }
     }
 

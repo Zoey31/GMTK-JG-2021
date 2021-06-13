@@ -9,8 +9,17 @@ public class MovementScript : MonoBehaviour
     [SerializeField] float moveSpeedScaler = 100f;
     [SerializeField] float rotateSpeedScaler = 10f;
     [SerializeField] ParticleSystem dustParticles;
+    [SerializeField] GameObject impactConfusionParticles;
+    [SerializeField] float impactConfusionTime = 2.0f;
+    [SerializeField] float impactConfusionSpawnOffset = 1.5f;
+
+    GameObject currentImpactParticles;
+
     Animator playerAnimator;
+
     public bool hasPossession = false;
+    public bool isLocked = false;
+
 
     void Start()
     {
@@ -19,15 +28,26 @@ public class MovementScript : MonoBehaviour
 
     void Update()
     {
-        var movementVector = Move();
-        Rotate(movementVector);
-        Animate(movementVector);
-        Possess(movementVector);
+        if (!isLocked)
+        {
+            var movementVector = Move();
+            Rotate(movementVector);
+            Animate(movementVector);
+            Possess(movementVector);
+        }
+        else
+        {
+            currentImpactParticles.transform.position = new Vector3(transform.localPosition.x, transform.localPosition.y + impactConfusionSpawnOffset, transform.localPosition.z);
+            currentImpactParticles.transform.position += transform.up;
+            currentImpactParticles.transform.position += transform.up;
+            currentImpactParticles.transform.position += transform.forward;
+        }
+
     }
 
     private void Animate(Vector3 targetVector)
     {
-        if (targetVector.magnitude > 0)
+        if (targetVector.magnitude > 0 && !hasPossession)
         {
             playerAnimator.SetFloat("move_speed", targetVector.magnitude);
             var meshTranform = GetComponentInChildren<Transform>();
@@ -74,6 +94,7 @@ public class MovementScript : MonoBehaviour
                 if (transform.position.y < 1)
                 {
                     possessAble.OnAction(GetComponentInChildren<Rigidbody>(), movementVector);
+                    StartCoroutine(WaitAfterTheAction(impactConfusionTime));
                 }
             }
         }
@@ -86,6 +107,19 @@ public class MovementScript : MonoBehaviour
                 hasPossession = possessAble.isPossessed;
             }
         }
+    }
 
+    private IEnumerator WaitAfterTheAction(float time)
+    {
+        isLocked = true;
+        Debug.Log("Moving after jump is locked! " + isLocked);
+        currentImpactParticles = Instantiate(
+            impactConfusionParticles,
+            new Vector3(transform.localPosition.x, transform.localPosition.y + impactConfusionSpawnOffset, transform.localPosition.z),
+            Quaternion.identity
+            );
+        yield return new WaitForSeconds(time);
+        isLocked = false;
+        Debug.Log("Time passed, keed moving! " + isLocked);
     }
 }
