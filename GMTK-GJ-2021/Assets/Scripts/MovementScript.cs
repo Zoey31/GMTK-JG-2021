@@ -71,7 +71,10 @@ public class MovementScript : MonoBehaviour
             }
             else
             {
-                possessAble.OnAction(GetComponentInChildren<Rigidbody>(), movementVector);
+                if (transform.position.y < 1)
+                {
+                    possessAble.OnAction(GetComponentInChildren<Rigidbody>(), movementVector);
+                }
             }
         }
 

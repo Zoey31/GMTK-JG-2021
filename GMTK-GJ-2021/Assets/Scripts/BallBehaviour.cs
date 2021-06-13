@@ -86,8 +86,7 @@ public class BallBehaviour : ProtectedSettings
     }
 
     public void OnAction(Rigidbody rb, Vector3 movementVector)
-    {
-        
+    { 
         rb.AddForce(movementVector.x, jumpHight, movementVector.z, ForceMode.Impulse);
     }
 }
