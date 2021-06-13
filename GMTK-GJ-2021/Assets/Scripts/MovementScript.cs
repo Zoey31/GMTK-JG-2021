@@ -10,6 +10,7 @@ public class MovementScript : MonoBehaviour
     [SerializeField] float rotateSpeedScaler = 10f;
     [SerializeField] ParticleSystem dustParticles;
     Animator playerAnimator;
+    protected GameObject possessedObject = null;
 
     void Start()
     {
@@ -17,6 +18,19 @@ public class MovementScript : MonoBehaviour
     }
 
     void Update()
+    {
+        if (possessedObject == null)
+        {
+            DefaultAction();
+        }
+        else
+        {
+            
+        }
+        
+    }
+
+    void DefaultAction()
     {
         var movementVector = Move();
         Rotate(movementVector);
