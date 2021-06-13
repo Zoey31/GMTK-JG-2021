@@ -10,6 +10,7 @@ public class MovementScript : MonoBehaviour
     [SerializeField] float rotateSpeedScaler = 10f;
     [SerializeField] ParticleSystem dustParticles;
     Animator playerAnimator;
+    public bool hasPossession = false;
 
     void Start()
     {
@@ -21,6 +22,7 @@ public class MovementScript : MonoBehaviour
         var movementVector = Move();
         Rotate(movementVector);
         Animate(movementVector);
+        Possess(movementVector);
     }
 
     private void Animate(Vector3 targetVector)
@@ -40,10 +42,12 @@ public class MovementScript : MonoBehaviour
     private Vector3 Move()
     {
         var targetVector = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
-
-        var speed = moveSpeedScaler * Time.deltaTime;
-        var targetPosition = transform.position + targetVector * speed;
-        transform.position = targetPosition;
+        if (!hasPossession)
+        {
+            var speed = moveSpeedScaler * Time.deltaTime;
+            var targetPosition = transform.position + targetVector * speed;
+            transform.position = targetPosition;
+        }
 
         return targetVector;
     }
@@ -53,5 +57,32 @@ public class MovementScript : MonoBehaviour
         if (movementVector.magnitude == 0) { return; }
         var rotation = Quaternion.LookRotation(movementVector);
         transform.rotation = Quaternion.RotateTowards(transform.rotation, rotation, rotateSpeedScaler);
+    }
+
+    private void Possess(Vector3 movementVector)
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            var possessAble = GameObject.FindGameObjectWithTag("PossesAble").GetComponent<BallBehaviour>();
+            if (possessAble.isInPlayerRange && !possessAble.isPossessed)
+            {
+                possessAble.OnPossessionStart(playerAnimator, transform);
+                hasPossession = possessAble.isPossessed;
+            }
+            else
+            {
+                possessAble.OnAction(GetComponentInChildren<Rigidbody>(), movementVector);
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.Q)) {
+            var possessAble = GameObject.FindGameObjectWithTag("PossesAble").GetComponent<BallBehaviour>();
+            if (possessAble.isPossessed) // should also check is its not in the air
+            {
+                possessAble.OnPossessionEnd(playerAnimator, transform);
+                hasPossession = possessAble.isPossessed;
+            }
+        }
+
     }
 }
